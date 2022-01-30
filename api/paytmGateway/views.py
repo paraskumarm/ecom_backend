@@ -1,0 +1,142 @@
+
+from itertools import product
+import json
+from django.http import JsonResponse
+import environ
+
+from api.product.models import Product
+from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from api.orderPayTm.models import OrderPayTm,Address
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import get_user_model
+from . import Checksum
+# import Checksum
+# paytmGateway
+# Create your views here.
+
+env = environ.Env()
+
+# you have to create .env file in same folder where you are using environ.Env()
+# reading .env file which located in api folder
+environ.Env.read_env()
+
+def validate_user_session(id, token):
+    UserModel = get_user_model()
+    try:
+        user = UserModel.objects.get(pk=id)
+        if user.session_token == token:
+            return True
+        return False
+    except UserModel.DoesNotExist:
+        return False
+# @csrf_exempt
+@api_view(['POST'])
+def start_payment(request,user_id,token,address_id):
+    # request.data is coming from frontend
+    if not validate_user_session(user_id, token):
+        return JsonResponse({'error': 'Please re-login', 'code': '1'})
+    if request.method == "POST":
+        user_id = user_id
+        address_id=address_id
+        product_names = request.POST['product_names']
+        total_products = request.POST['total_products']
+        total_amount = request.POST['total_amount']
+        pkarr = request.POST['pkarr']
+        quantity_info = request.POST['quantity_info']
+        color_info = request.POST['color_info']
+        size_info = request.POST['size_info']
+        # print("product_info",product_info)
+        # print((color_info))
+
+        pkarr=json.loads(pkarr)
+        quantity_info=json.loads(quantity_info)
+        color_info=json.loads(color_info)
+        size_info=json.loads(size_info)
+        print("color+++",color_info)
+        for i in pkarr:
+            i=int(i)
+        list1=pkarr
+        list1,quantity_info = zip(*sorted(zip(list1,quantity_info)))
+        list1=pkarr
+        list1,color_info = zip(*sorted(zip(list1,color_info)))
+        list1=pkarr
+        list1,size_info = zip(*sorted(zip(list1,size_info)))
+
+        
+        
+        UserModel = get_user_model()
+
+        try:
+            user = UserModel.objects.get(pk=user_id)
+        except UserModel.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'})
+        try:
+            address = Address.objects.get(pk=address_id)
+        except Address.DoesNotExist:
+            return JsonResponse({'error': 'Address does not exist'})
+        try:
+            products = Product.objects.filter(pk__in=pkarr)
+        except Product.DoesNotExist:
+            return JsonResponse({'error': 'product does not exist'})
+        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info)
+        order.save()
+        order.products.set(products)
+        order.save()
+
+
+    # we have to send the param_dict to the frontend
+    # these credentials will be passed to paytm order processor to verify the business account
+    param_dict = {
+        'MID': env('MERCHANTID'),
+        'ORDER_ID': str(order.pk),
+        'TXN_AMOUNT': str(total_amount),
+        'CUST_ID': str(user_id),
+        'INDUSTRY_TYPE_ID': 'Retail',
+        'WEBSITE': 'WEBSTAGING',
+        'CHANNEL_ID': 'WEB',
+        'CALLBACK_URL': 'http://127.0.0.1:8000/api/paytmGateway/handlepayment/',
+        # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
+    }
+
+    # create new checksum (unique hashed string) using our merchant key with every paytm payment
+    param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, env('MERCHANTKEY'))
+    # send the dictionary with all the credentials to the frontend
+    return Response({'param_dict': param_dict})
+
+
+@api_view(['POST'])
+def handlepayment(request):
+    checksum = ""
+    # the request.POST is coming from paytm
+    form = request.POST
+    print("form=",form)
+    response_dict = {}
+    order = None  # initialize the order varible with None
+
+    for i in form.keys():
+        response_dict[i] = form[i]
+        if i == 'CHECKSUMHASH':
+            # 'CHECKSUMHASH' is coming from paytm and we will assign it to checksum variable to verify our paymant
+            checksum = form[i]
+
+        if i == 'ORDERID':
+            # we will get an order with id==ORDERID to turn isPaid=True when payment is successful
+            order = OrderPayTm.objects.get(id=form[i])
+
+    # we will verify the payment using our merchant key and the checksum that we are getting from Paytm request.POST
+    verify = Checksum.verify_checksum(response_dict, env('MERCHANTKEY'), checksum)
+
+    if verify:
+        if response_dict['RESPCODE'] == '01':
+            # if the response code is 01 that means our transaction is successfull
+            print('order successful')
+            # after successfull payment we will make isPaid=True and will save the order
+            order.isPaid = True
+            order.save()
+            # we will render a template to display the payment status
+            return render(request, 'index.html', {'response': response_dict})
+        else:
+            print('order was not successful because' + response_dict['RESPMSG'])
+            return render(request, 'index.html', {'response': response_dict})
