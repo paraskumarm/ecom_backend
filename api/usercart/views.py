@@ -23,7 +23,7 @@ def validate_user_session(id, token):
         return False
     except UserModel.DoesNotExist:
         return False
-# @csrf_exempt
+@csrf_exempt
 def add(request, user_id,token,product_id):
     # return JsonResponse({'msg': 'HI'})
     if not validate_user_session(user_id, token):
@@ -33,10 +33,9 @@ def add(request, user_id,token,product_id):
         quantity = request.POST['quantity']
         selectedProductColor = request.POST['selectedProductColor']
         selectedProductSize = request.POST['selectedProductSize']
-        
-
+        product_id = request.POST['product_id']
+        print("id===",product_id)
         UserModel = get_user_model()
-
         try:
             user = UserModel.objects.get(pk=user_id)
         except UserModel.DoesNotExist:
@@ -45,9 +44,6 @@ def add(request, user_id,token,product_id):
             product = Product.objects.get(pk=product_id)
         except Product.DoesNotExist:
             return JsonResponse({'error': 'Product does not exist'})
-
-    
-
         cart = Usercart(user=user,product=product,selectedProductColor=selectedProductColor,selectedProductSize=selectedProductSize,quantity=quantity)
         cart.save()
     
