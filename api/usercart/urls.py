@@ -8,5 +8,5 @@ router.register(r'',views.CartViewSet)
 # router.register(r'',views.ProductViewSet)
 urlpatterns =[
     path('',include(router.urls)),
-    path('add/<int:user_id>/<str:token>/<int:product_id>',views.add,name='cart.add'), 
+    path('addtocart/<int:user_id>/<str:token>/',views.add,name='cart.add'), 
 ]

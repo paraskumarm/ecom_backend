@@ -2,8 +2,8 @@
 from itertools import product
 import json
 from django.http import JsonResponse
+from api.paytmGateway import Google 
 import environ
-
 from api.product.models import Product
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -12,6 +12,11 @@ from api.orderPayTm.models import OrderPayTm,Address
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from . import Checksum
+
+
+import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 # import Checksum
 # paytmGateway
 # Create your views here.
@@ -47,13 +52,15 @@ def start_payment(request,user_id,token,address_id):
         quantity_info = request.POST['quantity_info']
         color_info = request.POST['color_info']
         size_info = request.POST['size_info']
+        status_info = request.POST['status_info']
         # print("product_info",product_info)
         # print((color_info))
 
         pkarr=json.loads(pkarr)
         quantity_info=json.loads(quantity_info)
-        color_info=json.loads(color_info)
+        color_info=json.loads(color_info) 
         size_info=json.loads(size_info)
+        # status_info=json.loads(status_info)
         print("color+++",color_info)
         for i in pkarr:
             i=int(i)
@@ -80,7 +87,7 @@ def start_payment(request,user_id,token,address_id):
             products = Product.objects.filter(pk__in=pkarr)
         except Product.DoesNotExist:
             return JsonResponse({'error': 'product does not exist'})
-        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info)
+        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info)
         order.save()
         order.products.set(products)
         order.save()
@@ -127,7 +134,11 @@ def handlepayment(request):
 
     # we will verify the payment using our merchant key and the checksum that we are getting from Paytm request.POST
     verify = Checksum.verify_checksum(response_dict, env('MERCHANTKEY'), checksum)
-
+    CLIENT_SECRET_FILE = 'client_secret.json'
+    API_NAME = 'gmail'
+    API_VERSION = 'v1'
+    SCOPES = ['https://mail.google.com/']
+    service = Google.Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
     if verify:
         if response_dict['RESPCODE'] == '01':
             # if the response code is 01 that means our transaction is successfull
@@ -136,6 +147,23 @@ def handlepayment(request):
             order.isPaid = True
             order.save()
             # we will render a template to display the payment status
+            
+
+            emailMsg1 = 'Order of ₹ '+ form['TXNAMOUNT']+'is successful your order will be delivered in few days'
+            mimeMessage1 = MIMEMultipart()
+            mimeMessage1['to'] = 'parasmahour17@gmail.com'
+            mimeMessage1['subject'] = 'Gmail API Test'+form['STATUS']
+            mimeMessage1.attach(MIMEText(emailMsg1, 'plain'))
+            raw_string = base64.urlsafe_b64encode(mimeMessage1.as_bytes()).decode()
+
+            message1 = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
+            emailMsg2 = 'Order of ₹'+form['TXNAMOUNT']+' is successful of order id '+form['ORDERID']
+            mimeMessage2 = MIMEMultipart()
+            mimeMessage2['to'] = 'parasmahour15@gmail.com'
+            mimeMessage2['subject'] = 'Gmail API Test'+form['STATUS']
+            mimeMessage2.attach(MIMEText(emailMsg2, 'plain'))
+            raw_string = base64.urlsafe_b64encode(mimeMessage2.as_bytes()).decode()
+            message2 = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
             return render(request, 'index.html', {'response': response_dict})
         else:
             print('order was not successful because' + response_dict['RESPMSG'])

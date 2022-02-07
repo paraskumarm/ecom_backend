@@ -24,27 +24,41 @@ def validate_user_session(id, token):
     except UserModel.DoesNotExist:
         return False
 @csrf_exempt
-def add(request, user_id,token,product_id):
+def add(request, user_id,token):
     # return JsonResponse({'msg': 'HI'})
     if not validate_user_session(user_id, token):
         return JsonResponse({'error': 'Please re-login', 'code': '1'})
     if request.method == "POST":
-        user_id = id
+        user_id = user_id
+        # print(request.POST)
         quantity = request.POST['quantity']
         selectedProductColor = request.POST['selectedProductColor']
         selectedProductSize = request.POST['selectedProductSize']
-        product_id = request.POST['product_id']
-        print("id===",product_id)
+        product_id = (request.POST['product_id'])
+        # print("id===",product_id)
         UserModel = get_user_model()
         try:
             user = UserModel.objects.get(pk=user_id)
         except UserModel.DoesNotExist:
             return JsonResponse({'error': 'User does not exist'})
         try:
-            product = Product.objects.get(pk=product_id)
+            product = Product.objects.get(pk=int(product_id))
         except Product.DoesNotExist:
             return JsonResponse({'error': 'Product does not exist'})
-        cart = Usercart(user=user,product=product,selectedProductColor=selectedProductColor,selectedProductSize=selectedProductSize,quantity=quantity)
-        cart.save()
+            # i have to check if product is already present in the given usercart or not
+        try:
+            previouscart=Usercart.objects.get(user=user_id,product=int(product_id))
+            print("Previouscart",previouscart)
+            newquantity=previouscart.quantity+1
+            previouscart.delete()
+            previouscart = Usercart(user=user,product=product,selectedProductColor=selectedProductColor,selectedProductSize=selectedProductSize,quantity=newquantity)
+            previouscart.save()
+            return JsonResponse({'success': True, 'error': False,'id':previouscart.pk})
+        except Usercart.DoesNotExist:
+            cart = Usercart(user=user,product=product,selectedProductColor=selectedProductColor,selectedProductSize=selectedProductSize,quantity=int(quantity))
+            cart.save()
+            return JsonResponse({'success': True, 'error': False,'id':cart.pk})
+        
+            
     
-    return JsonResponse({'success': True, 'error': False, 'cart': cart})
+    return JsonResponse({'success': True, 'error': False})
