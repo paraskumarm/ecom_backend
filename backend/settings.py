@@ -12,18 +12,24 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+import configparser
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+CONFIG_DIR = os.path.join(BASE_DIR, 'properties/local.cfg')
+
+config = configparser.ConfigParser(interpolation=None)
+config.read_file(open(CONFIG_DIR))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+5h^^=xa)%pr&4@kk=#bw4nh6d!me$a(lrq#x3583g6vzwc)3!'
+SECRET_KEY = config.get('DEFAULT','SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config.getboolean('DEFAULT','DEBUG')
 
 ALLOWED_HOSTS = ['*']#paras(all host are allowed to access this app(postman or react))
 
@@ -136,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE =  'Asia/Kolkata'
 
 USE_I18N = True
 
