@@ -2,30 +2,27 @@
 from itertools import product
 import json
 from django.http import JsonResponse
-from api.paytmGateway import Google 
-import environ
+from api.paytmGateway import Google
 from api.product.models import Product
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.orderPayTm.models import OrderPayTm,Address
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from . import Checksum
-
-
 import base64
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# import Checksum
-# paytmGateway
-# Create your views here.
+import configparser
+from backend.settings import CONFIG_DIR
 
-env = environ.Env()
+config = configparser.ConfigParser(interpolation=None)
+config.read_file(open(CONFIG_DIR))
 
-# you have to create .env file in same folder where you are using environ.Env()
-# reading .env file which located in api folder
-environ.Env.read_env()
+MERCHANTID = config.get('PAYTM','MERCHANTID')
+MERCHANTKEY = config.get('PAYTM','MERCHANTKEY')
+SEND_TO = [email.strip() for email in config.get('EMAIL','SEND_TO').split(',')]
+CALLBACK_URL = config.get('PAYTM','CALLBACK_URL')
 
 def validate_user_session(id, token):
     UserModel = get_user_model()
@@ -96,19 +93,19 @@ def start_payment(request,user_id,token,address_id):
     # we have to send the param_dict to the frontend
     # these credentials will be passed to paytm order processor to verify the business account
     param_dict = {
-        'MID': env('MERCHANTID'),
+        'MID': MERCHANTID,
         'ORDER_ID': str(order.pk),
         'TXN_AMOUNT': str(total_amount),
         'CUST_ID': str(user_id),
         'INDUSTRY_TYPE_ID': 'Retail',
         'WEBSITE': 'WEBSTAGING',
         'CHANNEL_ID': 'WEB',
-        'CALLBACK_URL': 'http://127.0.0.1:8000/api/paytmGateway/handlepayment/',
+        'CALLBACK_URL': CALLBACK_URL,
         # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
     }
 
     # create new checksum (unique hashed string) using our merchant key with every paytm payment
-    param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, env('MERCHANTKEY'))
+    param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, MERCHANTKEY)
     # send the dictionary with all the credentials to the frontend
     return Response({'param_dict': param_dict})
 
@@ -133,7 +130,7 @@ def handlepayment(request):
             order = OrderPayTm.objects.get(id=form[i])
 
     # we will verify the payment using our merchant key and the checksum that we are getting from Paytm request.POST
-    verify = Checksum.verify_checksum(response_dict, env('MERCHANTKEY'), checksum)
+    verify = Checksum.verify_checksum(response_dict, MERCHANTKEY, checksum)
     CLIENT_SECRET_FILE = 'client_secret.json'
     API_NAME = 'gmail'
     API_VERSION = 'v1'
@@ -147,23 +144,17 @@ def handlepayment(request):
             order.isPaid = True
             order.save()
             # we will render a template to display the payment status
-            
 
-            emailMsg1 = 'Order of ₹ '+ form['TXNAMOUNT']+'is successful your order will be delivered in few days'
-            mimeMessage1 = MIMEMultipart()
-            mimeMessage1['to'] = 'parasmahour17@gmail.com'
-            mimeMessage1['subject'] = 'Gmail API Test'+form['STATUS']
-            mimeMessage1.attach(MIMEText(emailMsg1, 'plain'))
-            raw_string = base64.urlsafe_b64encode(mimeMessage1.as_bytes()).decode()
+            for email_id in SEND_TO:
+                emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is successful of order id ' + form['ORDERID']
+                mimeMessage = MIMEMultipart()
+                mimeMessage['to'] = email_id
+                mimeMessage['subject'] = 'Gmail API Test' + form['STATUS']
+                mimeMessage.attach(MIMEText(emailMsg, 'plain'))
+                raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
+                message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
+                print("EMAIL SENT TO:",email_id)
 
-            message1 = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
-            emailMsg2 = 'Order of ₹'+form['TXNAMOUNT']+' is successful of order id '+form['ORDERID']
-            mimeMessage2 = MIMEMultipart()
-            mimeMessage2['to'] = 'parasmahour15@gmail.com'
-            mimeMessage2['subject'] = 'Gmail API Test'+form['STATUS']
-            mimeMessage2.attach(MIMEText(emailMsg2, 'plain'))
-            raw_string = base64.urlsafe_b64encode(mimeMessage2.as_bytes()).decode()
-            message2 = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
             return render(request, 'index.html', {'response': response_dict})
         else:
             print('order was not successful because' + response_dict['RESPMSG'])
