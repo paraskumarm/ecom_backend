@@ -47,12 +47,12 @@ INSTALLED_APPS = [
     'rest_framework',#added by paras
     'rest_framework.authtoken',#added by paras
     'api',#added by paras
-    'api.category',#added by paras
+    # 'api.category',#added by paras
     'api.product',
     'api.user',
     # 'api.order',
-    'api.payment',
-    'api.slider',
+    # 'api.payment',
+    # 'api.slider',
     'api.paytmGateway',
     'api.address',
     'api.orderPayTm',

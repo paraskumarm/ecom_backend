@@ -16,8 +16,8 @@ class Variation(models.Model):
     def __str__(self) :
         return self.color
 
-class Images(models.Model):
-    image=models.ImageField(upload_to='images/',blank=True,null=True)
+# class Images(models.Model):
+#     image=models.ImageField(upload_to='images/',blank=True,null=True)
 
 class Product(models.Model):
     name=models.CharField(max_length=40)
@@ -25,7 +25,7 @@ class Product(models.Model):
     discount=models.PositiveIntegerField(default=10)
     offerEnd=models.DateTimeField(null=True)
     new=models.BooleanField(default=True)
-    rating=models.PositiveIntegerField(null=True)
+    # rating=models.PositiveIntegerField(null=True)
     saleCount=models.PositiveIntegerField(null=True)
     category=models.JSONField()
     tag=models.JSONField()

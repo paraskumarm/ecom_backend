@@ -158,4 +158,5 @@ def handlepayment(request):
             return render(request, 'index.html', {'response': response_dict})
         else:
             print('order was not successful because' + response_dict['RESPMSG'])
+            order.delete()
             return render(request, 'index.html', {'response': response_dict})

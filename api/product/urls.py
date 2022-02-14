@@ -7,7 +7,7 @@ router = routers.DefaultRouter()#changed from simple router to default router
 router.register(r'',views.ProductViewSet)
 router.register(r'',views.VariationViewSet)
 router.register(r'',views.SizeViewSet)
-router.register(r'',views.ImagesViewSet)
+# router.register(r'',views.ImagesViewSet)
 # router.register(r'',views.TagViewSet)
 # router.register(r'',views.CategoryViewSet)
 
