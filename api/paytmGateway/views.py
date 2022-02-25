@@ -2,7 +2,7 @@
 from itertools import product
 import json
 from django.http import JsonResponse
-from api.paytmGateway import Google
+import Google
 from api.product.models import Product
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -92,11 +92,12 @@ def start_payment(request,user_id,token,address_id):
 
     # we have to send the param_dict to the frontend
     # these credentials will be passed to paytm order processor to verify the business account
+    print(user.email)
     param_dict = {
         'MID': MERCHANTID,
         'ORDER_ID': str(order.pk),
         'TXN_AMOUNT': str(total_amount),
-        'CUST_ID': str(user_id),
+        'CUST_ID': str(user.email),
         'INDUSTRY_TYPE_ID': 'Retail',
         'WEBSITE': 'WEBSTAGING',
         'CHANNEL_ID': 'WEB',
@@ -118,7 +119,7 @@ def handlepayment(request):
     print("form=",form)
     response_dict = {}
     order = None  # initialize the order varible with None
-
+    # email=""
     for i in form.keys():
         response_dict[i] = form[i]
         if i == 'CHECKSUMHASH':
@@ -129,6 +130,9 @@ def handlepayment(request):
             # we will get an order with id==ORDERID to turn isPaid=True when payment is successful
             order = OrderPayTm.objects.get(id=form[i])
 
+        # if i == "CUST_ID":
+        #     email=form[i]
+    # print("email= ",email)
     # we will verify the payment using our merchant key and the checksum that we are getting from Paytm request.POST
     verify = Checksum.verify_checksum(response_dict, MERCHANTKEY, checksum)
     CLIENT_SECRET_FILE = 'client_secret.json'
@@ -146,10 +150,10 @@ def handlepayment(request):
             # we will render a template to display the payment status
 
             for email_id in SEND_TO:
-                emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is successful of order id ' + form['ORDERID']
+                emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is successful having order id ' + form['ORDERID']
                 mimeMessage = MIMEMultipart()
                 mimeMessage['to'] = email_id
-                mimeMessage['subject'] = 'Gmail API Test' + form['STATUS']
+                mimeMessage['subject'] = 'Gmail API Test ' + form['STATUS']
                 mimeMessage.attach(MIMEText(emailMsg, 'plain'))
                 raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
                 message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
@@ -158,5 +162,15 @@ def handlepayment(request):
             return render(request, 'index.html', {'response': response_dict})
         else:
             print('order was not successful because' + response_dict['RESPMSG'])
+            for email_id in SEND_TO:
+                emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is failed having order id ' + form['ORDERID']
+                mimeMessage = MIMEMultipart()
+                mimeMessage['to'] = email_id
+                mimeMessage['subject'] = 'Gmail API Test ' + form['STATUS']
+                mimeMessage.attach(MIMEText(emailMsg, 'plain'))
+                raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
+                message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
+                print("EMAIL SENT TO:",email_id)
+                
             order.delete()
             return render(request, 'index.html', {'response': response_dict})

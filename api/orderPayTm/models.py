@@ -25,3 +25,4 @@ class OrderPayTm(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self) -> str:
             return self.user.name
+# order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info)
