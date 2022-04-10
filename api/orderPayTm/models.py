@@ -20,6 +20,7 @@ class OrderPayTm(models.Model):
     color_info = models.CharField(max_length=500,default="",null=True)
     size_info = models.CharField(max_length=500,default="",null=True)
     status_info = models.CharField(max_length=500,default="",null=True)
+    pkarrqty = models.CharField(max_length=500,default="",null=True)
     isPaid=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

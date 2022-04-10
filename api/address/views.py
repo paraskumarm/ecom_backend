@@ -13,7 +13,6 @@ class AddressViewSet(viewsets.ModelViewSet):
 
 @csrf_exempt
 def add(request, id):
-    # return JsonResponse({'msg': 'HI'})
 
     if request.method == "POST":
         user_id = id

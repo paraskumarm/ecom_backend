@@ -18,6 +18,7 @@ class Variation(models.Model):
     stockM=models.PositiveIntegerField(default=0)
     stockL=models.PositiveIntegerField(default=0)
     stockXL=models.PositiveIntegerField(default=0)
+    stockXXL=models.PositiveIntegerField(default=0)
     def __str__(self) :
         return self.name
 

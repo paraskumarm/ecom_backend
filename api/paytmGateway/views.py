@@ -50,15 +50,13 @@ def start_payment(request,user_id,token,address_id):
         color_info = request.POST['color_info']
         size_info = request.POST['size_info']
         status_info = request.POST['status_info']
-        # print("product_info",product_info)
-        # print((color_info))
+        pkarrqty = request.POST['pkarrqty']
 
         pkarr=json.loads(pkarr)
         quantity_info=json.loads(quantity_info)
         color_info=json.loads(color_info) 
         size_info=json.loads(size_info)
-        # status_info=json.loads(status_info)
-        print("color+++",color_info)
+        pkarrqty=json.loads(pkarrqty)
         for i in pkarr:
             i=int(i)
         list1=pkarr
@@ -67,6 +65,8 @@ def start_payment(request,user_id,token,address_id):
         list1,color_info = zip(*sorted(zip(list1,color_info)))
         list1=pkarr
         list1,size_info = zip(*sorted(zip(list1,size_info)))
+        # list1=pkarr
+        # list1,size_info = zip(*sorted(zip(list1,size_info)))
 
         
         
@@ -84,7 +84,7 @@ def start_payment(request,user_id,token,address_id):
             products = Product.objects.filter(pk__in=pkarr)
         except Product.DoesNotExist:
             return JsonResponse({'error': 'product does not exist'})
-        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info)
+        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info,pkarrqty=pkarrqty)
         order.save()
         order.products.set(products)
         order.save()
@@ -92,7 +92,7 @@ def start_payment(request,user_id,token,address_id):
 
     # we have to send the param_dict to the frontend
     # these credentials will be passed to paytm order processor to verify the business account
-    print(user.email)
+   
     param_dict = {
         'MID': MERCHANTID,
         'ORDER_ID': str(order.pk),
@@ -101,7 +101,8 @@ def start_payment(request,user_id,token,address_id):
         'INDUSTRY_TYPE_ID': 'Retail',
         'WEBSITE': 'WEBSTAGING',
         'CHANNEL_ID': 'WEB',
-        'CALLBACK_URL': CALLBACK_URL,
+        'CALLBACK_URL': CALLBACK_URL+user.email+"/",
+        # 'CALLBACK_URL': "http://127.0.0.1:8000/api/paytmGateway/handlepayment/"
         # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
     }
 
@@ -112,14 +113,14 @@ def start_payment(request,user_id,token,address_id):
 
 
 @api_view(['POST'])
-def handlepayment(request):
+def handlepayment(request,user_mailid):
     checksum = ""
+   
     # the request.POST is coming from paytm
     form = request.POST
-    print("form=",form)
+    
     response_dict = {}
     order = None  # initialize the order varible with None
-    # email=""
     for i in form.keys():
         response_dict[i] = form[i]
         if i == 'CHECKSUMHASH':
@@ -130,9 +131,7 @@ def handlepayment(request):
             # we will get an order with id==ORDERID to turn isPaid=True when payment is successful
             order = OrderPayTm.objects.get(id=form[i])
 
-        # if i == "CUST_ID":
-        #     email=form[i]
-    # print("email= ",email)
+    
     # we will verify the payment using our merchant key and the checksum that we are getting from Paytm request.POST
     verify = Checksum.verify_checksum(response_dict, MERCHANTKEY, checksum)
     CLIENT_SECRET_FILE = 'client_secret.json'
