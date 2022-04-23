@@ -20,8 +20,10 @@ class OrderPayTm(models.Model):
     color_info = models.CharField(max_length=500,default="",null=True)
     size_info = models.CharField(max_length=500,default="",null=True)
     status_info = models.CharField(max_length=500,default="",null=True)
+    pkarrqty = models.CharField(max_length=500,default="",null=True)
     isPaid=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self) -> str:
             return self.user.name
+# order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info)

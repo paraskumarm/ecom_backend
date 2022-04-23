@@ -1,4 +1,5 @@
 import abc
+from genericpath import exists
 from django.contrib.auth.backends import UserModel
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
@@ -49,6 +50,45 @@ def signin(request):
             return JsonResponse({'error':'Invalid Password'})
     except UserModel.DoesNotExist:
         return JsonResponse({'error':'Invalid email'})
+@csrf_exempt
+def googlesignin(request):
+    # send email and token
+    print("paras",request.POST)
+    if not request.method =='POST':
+        return JsonResponse({'error':'Send a post request with a valid parameter'}) 
+    
+    name=request.POST['name']
+    username=request.POST['email']
+    token=request.POST['token']
+    # print(token)
+    UserModel=get_user_model()
+    # token=generate_session_token()
+    try:
+        # if user exists
+        # get email,get token,no password required,password is none
+        user=UserModel.objects.get(email=username)
+        usr_dict=UserModel.objects.filter(email=username).values().first()
+        # usr_dict.pop('password')
+
+        if user.session_token!="0":
+            # logout if already signed in
+            user.session_token="0"
+            user.save()
+            return JsonResponse({'error':'Previous session exists'})
+        
+        user.session_token=token #store token sent by google
+        user.save()
+        login(request,user)
+        return JsonResponse({'token':token,'user':usr_dict})
+    except UserModel.DoesNotExist:
+        # create user by name email phone
+        # save user
+        dict={"name":name,"email":username,"password":None}
+        print(dict)
+        UserSerializer().create(dict)#doubt
+        usr_dict=UserModel.objects.filter(email=username).values().first()
+        return JsonResponse({'token':token,'user':usr_dict})
+
 def signout(request, id):
     logout(request)
     UserModel = get_user_model()

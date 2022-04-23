@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'api.address',
     'api.orderPayTm',
     'api.usercart',
+    'api.wishlist',
     'django_filters',
 ]
 

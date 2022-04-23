@@ -10,11 +10,17 @@ class Size(models.Model):
         return self.name
 
 class Variation(models.Model):
+    name=models.CharField(max_length=40,default="variation name")
     color=models.CharField(max_length=40,null=True)
     image=models.ImageField(upload_to='images/',blank=True,null=True)
-    size=models.ManyToManyField(Size)
+    # size=models.ManyToManyField(Size)
+    stockS=models.PositiveIntegerField(default=0)
+    stockM=models.PositiveIntegerField(default=0)
+    stockL=models.PositiveIntegerField(default=0)
+    stockXL=models.PositiveIntegerField(default=0)
+    stockXXL=models.PositiveIntegerField(default=0)
     def __str__(self) :
-        return self.color
+        return self.name
 
 # class Images(models.Model):
 #     image=models.ImageField(upload_to='images/',blank=True,null=True)
