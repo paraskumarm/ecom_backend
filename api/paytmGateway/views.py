@@ -9,6 +9,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.orderPayTm.models import OrderPayTm,Address
 from django.contrib.auth import get_user_model
+
+from api.order.models import Order
 from . import Checksum
 import base64
 from email.mime.multipart import MIMEMultipart
@@ -51,12 +53,18 @@ def start_payment(request,user_id,token,address_id):
         size_info = request.POST['size_info']
         status_info = request.POST['status_info']
         pkarrqty = request.POST['pkarrqty']
-
+        product_name_array = request.POST['product_name_array']
+        price_info = request.POST['price_info']
+        product_id = request.POST['product_id']
+        
         pkarr=json.loads(pkarr)
         quantity_info=json.loads(quantity_info)
         color_info=json.loads(color_info) 
         size_info=json.loads(size_info)
         pkarrqty=json.loads(pkarrqty)
+        product_name_array=json.loads(product_name_array)
+        price_info=json.loads(price_info)
+        product_id=json.loads(product_id)
         for i in pkarr:
             i=int(i)
         list1=pkarr
@@ -65,13 +73,20 @@ def start_payment(request,user_id,token,address_id):
         list1,color_info = zip(*sorted(zip(list1,color_info)))
         list1=pkarr
         list1,size_info = zip(*sorted(zip(list1,size_info)))
+        list1=pkarr
+        list1,product_name_array = zip(*sorted(zip(list1,product_name_array)))
+        list1=pkarr
+        list1,price_info = zip(*sorted(zip(list1,price_info)))
+        list1=pkarr
+        list1,product_id = zip(*sorted(zip(list1,product_id)))
         # list1=pkarr
         # list1,size_info = zip(*sorted(zip(list1,size_info)))
 
         
+
         
         UserModel = get_user_model()
-
+        
         try:
             user = UserModel.objects.get(pk=user_id)
         except UserModel.DoesNotExist:
@@ -88,7 +103,14 @@ def start_payment(request,user_id,token,address_id):
         order.save()
         order.products.set(products)
         order.save()
-
+        # Order
+        print("pid=",product_id)
+        print("size_info=",size_info)
+        print("price_info=",price_info)
+        print("status_info=",status_info)
+        for i in range (0,len(color_info)):
+          orderhistory = Order(transaction_id=order.pk,user=user,product=Product.objects.get(pk=product_id[i]),address=address,product_name=product_name_array[i],total_amount=price_info[i],quantity_info=quantity_info[i],size_info=size_info[i],color_info=color_info[i],status_info="Order Received")
+          orderhistory.save()
 
     # we have to send the param_dict to the frontend
     # these credentials will be passed to paytm order processor to verify the business account
@@ -160,6 +182,10 @@ def handlepayment(request,user_mailid):
 
             return render(request, 'index.html', {'response': response_dict})
         else:
+            failed_orders=Order.objects.filter(transaction_id=order.pk)
+            failed_orders.delete()
+            print("all_deleted")
+
             print('order was not successful because' + response_dict['RESPMSG'])
             for email_id in SEND_TO:
                 emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is failed having order id ' + form['ORDERID']
