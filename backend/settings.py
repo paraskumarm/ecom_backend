@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     # 'api.category',#added by paras
     'api.product',
     'api.user',
-    # 'api.order',
+    'api.order',
     # 'api.payment',
     # 'api.slider',
     'api.paytmGateway',

@@ -47,5 +47,6 @@ def add(request, user_id,token,address_id):
             return JsonResponse({'error': 'Address does not exist'})
         order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount)
         order.save()
+        # for i in range(0,len())
         
         return JsonResponse({'success': True, 'error': False, 'msg': 'Ordered Successfully','order_id':order.pk})
