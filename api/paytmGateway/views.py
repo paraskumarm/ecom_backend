@@ -180,7 +180,7 @@ def handlepayment(request,user_mailid):
                 message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
                 print("EMAIL SENT TO:",email_id)
 
-            return render(request, 'index.html', {'response': response_dict})
+            return render(request, 'transaction_response.html', {'response': response_dict})
         else:
             failed_orders=Order.objects.filter(transaction_id=order.pk)
             failed_orders.delete()
@@ -198,4 +198,4 @@ def handlepayment(request,user_mailid):
                 print("EMAIL SENT TO:",email_id)
                 
             order.delete()
-            return render(request, 'index.html', {'response': response_dict})
+            return render(request, 'transaction_response.html', {'response': response_dict})
