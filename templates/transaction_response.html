@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Payment status</title>
-</head>
-<body>
+  </head>
+  <body>
     <!-- style it however you want -->
     <!-- the 'response' is coming from the context -->
     {% if response.STATUS == "TXN_SUCCESS" %}
@@ -13,6 +13,6 @@
     {% else %}
     <h1>Transaction Failed</h1>
     {% endif %}
-    <a href="http://159.65.153.38:3000/orders/"><button>View Orders</button></a>
-</body>
+    <a href="http://localhost:3000/orders/"><button>View Orders</button></a>
+  </body>
 </html>
