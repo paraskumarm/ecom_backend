@@ -124,7 +124,7 @@ def start_payment(request,user_id,token,address_id):
         'WEBSITE': 'WEBSTAGING',
         'CHANNEL_ID': 'WEB',
         'CALLBACK_URL': CALLBACK_URL+user.email+"/",
-        # 'CALLBACK_URL': "http://127.0.0.1:8000/api/paytmGateway/handlepayment/"
+        # 'CALLBACK_URL': "http://127.0.0.1/api/paytmGateway/handlepayment/"
         # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
     }
 
