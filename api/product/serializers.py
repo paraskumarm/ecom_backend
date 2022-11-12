@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Product, Size, Variation#,Images#,Tags,Category
+from .models import Product, Variation#,Images#,Tags,Category
 
 # class TagSerializer(serializers.HyperlinkedModelSerializer):
 #     class Meta:
@@ -11,10 +11,10 @@ from .models import Product, Size, Variation#,Images#,Tags,Category
 #         model = Category
 #         fields=('category')
 
-class SizeSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Size
-        fields=('name','stock')
+# class SizeSerializer(serializers.HyperlinkedModelSerializer):
+#     class Meta:
+#         model = Size
+#         fields=('name','stock')
 class VariationSerializer(serializers.HyperlinkedModelSerializer):
     image=serializers.ImageField(max_length=None,allow_empty_file=False,allow_null=True,required=False)
     class Meta:

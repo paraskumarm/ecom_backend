@@ -3,11 +3,11 @@ from django.db import models
 # Create your models here.
 from django.contrib.postgres.fields import ArrayField
 
-class Size(models.Model):
-    name=models.CharField(max_length=40,null=True)
-    stock=models.PositiveIntegerField(null=True)
-    def __str__(self) :
-        return self.name
+# class Size(models.Model):
+#     name=models.CharField(max_length=40,null=True)
+#     stock=models.PositiveIntegerField(null=True)
+#     def __str__(self) :
+#         return self.name
 
 class Variation(models.Model):
     name=models.CharField(max_length=40,default="variation name")

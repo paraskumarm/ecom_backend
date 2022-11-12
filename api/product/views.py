@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from django.shortcuts import render
-from .serializers import ProductSerializer, SizeSerializer, VariationSerializer#,ImagesSerializer#,TagSerializer,CategorySerializer
+from .serializers import ProductSerializer, VariationSerializer#,ImagesSerializer#,TagSerializer,CategorySerializer
 
-from .models import Product, Size, Variation#,Images#,Tags,Category
+from .models import Product, Variation#,Images#,Tags,Category
 
 # Create your views here.
 class ProductViewSet(viewsets.ModelViewSet):
@@ -11,9 +11,9 @@ class ProductViewSet(viewsets.ModelViewSet):
 class VariationViewSet(viewsets.ModelViewSet):
     queryset=Variation.objects.all()
     serializer_class=VariationSerializer
-class SizeViewSet(viewsets.ModelViewSet):
-    queryset=Size.objects.all()
-    serializer_class=SizeSerializer
+# class SizeViewSet(viewsets.ModelViewSet):
+#     queryset=Size.objects.all()
+#     serializer_class=SizeSerializer
 # class ImagesViewSet(viewsets.ModelViewSet):
 #     queryset=Images.objects.all()
 #     serializer_class=ImagesSerializer
