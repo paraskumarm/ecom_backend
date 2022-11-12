@@ -6,7 +6,7 @@ from api.product.models import Product
 
 # Create your models here.
 
-
+# Lodu
 class OrderPayTm(models.Model):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, null=True, blank=True)
@@ -18,14 +18,8 @@ class OrderPayTm(models.Model):
     product_names = models.CharField(max_length=500)
     total_products = models.CharField(max_length=500, default=0)
     total_amount = models.CharField(max_length=50, default=0)
-    quantity_info = models.CharField(max_length=500,default="",null=True)
-    color_info = models.CharField(max_length=500,default="",null=True)
-    size_info = models.CharField(max_length=500,default="",null=True)
-    status_info = models.CharField(max_length=500,default="",null=True)
-    pkarrqty = models.CharField(max_length=500,default="",null=True)
     isPaid=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self) -> str:
             return str(self.pk)
-# order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info)

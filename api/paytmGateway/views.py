@@ -47,43 +47,20 @@ def start_payment(request,user_id,token,address_id):
         product_names = request.POST['product_names']
         total_products = request.POST['total_products']
         total_amount = request.POST['total_amount']
-        pkarr = request.POST['pkarr']
         quantity_info = request.POST['quantity_info']
         color_info = request.POST['color_info']
         size_info = request.POST['size_info']
         status_info = request.POST['status_info']
-        pkarrqty = request.POST['pkarrqty']
         product_name_array = request.POST['product_name_array']
         price_info = request.POST['price_info']
         product_id = request.POST['product_id']
-        
-        pkarr=json.loads(pkarr)
+        #loads() method can be used to parse a valid JSON string and convert it into a Python Dictionary
         quantity_info=json.loads(quantity_info)
         color_info=json.loads(color_info) 
         size_info=json.loads(size_info)
-        pkarrqty=json.loads(pkarrqty)
         product_name_array=json.loads(product_name_array)
         price_info=json.loads(price_info)
         product_id=json.loads(product_id)
-        for i in pkarr:
-            i=int(i)
-        list1=pkarr
-        list1,quantity_info = zip(*sorted(zip(list1,quantity_info)))
-        list1=pkarr
-        list1,color_info = zip(*sorted(zip(list1,color_info)))
-        list1=pkarr
-        list1,size_info = zip(*sorted(zip(list1,size_info)))
-        list1=pkarr
-        list1,product_name_array = zip(*sorted(zip(list1,product_name_array)))
-        list1=pkarr
-        list1,price_info = zip(*sorted(zip(list1,price_info)))
-        list1=pkarr
-        list1,product_id = zip(*sorted(zip(list1,product_id)))
-        # list1=pkarr
-        # list1,size_info = zip(*sorted(zip(list1,size_info)))
-
-        
-
         
         UserModel = get_user_model()
         
@@ -96,18 +73,15 @@ def start_payment(request,user_id,token,address_id):
         except Address.DoesNotExist:
             return JsonResponse({'error': 'Address does not exist'})
         try:
-            products = Product.objects.filter(pk__in=pkarr)
+            products = Product.objects.filter(pk__in=product_id)
         except Product.DoesNotExist:
             return JsonResponse({'error': 'product does not exist'})
-        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,quantity_info=quantity_info,size_info=size_info,color_info=color_info,status_info=status_info,pkarrqty=pkarrqty)
+        
+        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount)
         order.save()
         order.products.set(products)
         order.save()
         # Order
-        print("pid=",product_id)
-        print("size_info=",size_info)
-        print("price_info=",price_info)
-        print("status_info=",status_info)
         for i in range (0,len(color_info)):
           orderhistory = Order(transaction_id=order.pk,user=user,product=Product.objects.get(pk=product_id[i]),address=address,product_name=product_name_array[i],total_amount=price_info[i],quantity_info=quantity_info[i],size_info=size_info[i],color_info=color_info[i],status_info="Order Received")
           orderhistory.save()
