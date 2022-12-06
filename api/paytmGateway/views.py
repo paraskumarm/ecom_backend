@@ -8,6 +8,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.orderPayTm.models import OrderPayTm,Address
+from api.orderCOD.models import OrderCOD
 from django.contrib.auth import get_user_model
 
 from api.order.models import Order
@@ -77,35 +78,47 @@ def start_payment(request,user_id,token,address_id):
         except Product.DoesNotExist:
             return JsonResponse({'error': 'product does not exist'})
         
-        order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount)
-        order.save()
-        order.products.set(products)
-        order.save()
+        
         # Order
+        transaction_id=OrderCOD.objects.count()+OrderPayTm.objects.count()+1
         for i in range (0,len(color_info)):
-          orderhistory = Order(transaction_id=order.pk,user=user,product=Product.objects.get(pk=product_id[i]),address=address,product_name=product_name_array[i],total_amount=price_info[i],quantity_info=quantity_info[i],size_info=size_info[i],color_info=color_info[i],status_info="Order Received")
+          orderhistory = Order(transaction_id=transaction_id,user=user,product=Product.objects.get(pk=product_id[i]),address=address,product_name=product_name_array[i],total_amount=price_info[i],quantity_info=quantity_info[i],size_info=size_info[i],color_info=color_info[i],status_info="Order Received")
           orderhistory.save()
+        isCOD=0
+        #HANDLE COD AND PAYTM (isCOD==1 OR isCOD==0)
+        if(isCOD==1):
+            order = OrderCOD(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,transaction_id=transaction_id)
+            order.save()
+            order.products.set(products)
+            order.save()
+            # return render(request, 'transaction_response.html')
+            return JsonResponse({'param_dict': {}})
+        else:
+            order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,transaction_id=transaction_id)
+            order.save()
+            order.products.set(products)
+            order.save()
 
-    # we have to send the param_dict to the frontend
-    # these credentials will be passed to paytm order processor to verify the business account
+            # we have to send the param_dict to the frontend
+            # these credentials will be passed to paytm order processor to verify the business account
    
-    param_dict = {
-        'MID': MERCHANTID,
-        'ORDER_ID': str(order.pk),
-        'TXN_AMOUNT': str(total_amount),
-        'CUST_ID': str(user.email),
-        'INDUSTRY_TYPE_ID': 'Retail',
-        'WEBSITE': 'WEBSTAGING',
-        'CHANNEL_ID': 'WEB',
-        'CALLBACK_URL': CALLBACK_URL+user.email+"/",
-        # 'CALLBACK_URL': "http://127.0.0.1/api/paytmGateway/handlepayment/"
-        # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
-    }
+            param_dict = {
+                'MID': MERCHANTID,
+                'ORDER_ID': str(order.pk),
+                'TXN_AMOUNT': str(total_amount),
+                'CUST_ID': str(user.email),
+                'INDUSTRY_TYPE_ID': 'Retail',
+                'WEBSITE': 'WEBSTAGING',
+                'CHANNEL_ID': 'WEB',
+                'CALLBACK_URL': CALLBACK_URL+user.email+"/",
+                # 'CALLBACK_URL': "http://127.0.0.1/api/paytmGateway/handlepayment/"
+                # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
+            }
 
-    # create new checksum (unique hashed string) using our merchant key with every paytm payment
-    param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, MERCHANTKEY)
-    # send the dictionary with all the credentials to the frontend
-    return Response({'param_dict': param_dict})
+            # create new checksum (unique hashed string) using our merchant key with every paytm payment
+            param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, MERCHANTKEY)
+            # send the dictionary with all the credentials to the frontend
+            return Response({'param_dict': param_dict})
 
 
 @api_view(['POST'])

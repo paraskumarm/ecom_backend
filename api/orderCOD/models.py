@@ -6,7 +6,7 @@ from api.product.models import Product
 
 # Create your models here.
 
-class OrderPayTm(models.Model):
+class OrderCOD(models.Model):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     address = models.ForeignKey(
@@ -14,8 +14,8 @@ class OrderPayTm(models.Model):
     products = models.ManyToManyField(Product)
     # products = models.ForeignKey(
         # Product, on_delete=models.CASCADE, null=True, blank=True) 
-    transaction_id=models.IntegerField()
     product_names = models.CharField(max_length=500)
+    transaction_id=models.IntegerField()
     total_products = models.CharField(max_length=500, default=0)
     total_amount = models.CharField(max_length=50, default=0)
     isPaid=models.BooleanField(default=False)
