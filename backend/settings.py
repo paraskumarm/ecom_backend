@@ -17,7 +17,7 @@ import configparser
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CONFIG_DIR = os.path.join(BASE_DIR, 'properties/local.cfg')
+CONFIG_DIR = os.path.join(BASE_DIR, 'properties/prod.cfg')
 
 config = configparser.ConfigParser(interpolation=None)
 config.read_file(open(CONFIG_DIR))
