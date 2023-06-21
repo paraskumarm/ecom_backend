@@ -11,12 +11,12 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
-    def update(self,instance,validated_data):
+    def update(self,instance,validated_data):#TO RESET PASSWORD
         for attr,value in validated_data.items():
             if attr == 'password':
                 instance.set_password(value)
             else:
-                setattr(instance,attr,value)
+                setattr(instance,attr,value)#OR instance.attr=value
         instance.save()
         return instance
 

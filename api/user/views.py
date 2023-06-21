@@ -14,9 +14,18 @@ import random
 import re
 
 def generate_session_token(length=10):
-    return ''.join(random.SystemRandom().choice([chr(i)for i in range(97,123)]+[str(i) for i in range(10)]) for _ in range(length) )
+    # return ''.join(random.SystemRandom().choice([chr(i)for i in range(97,123)]+[str(i) for i in range(10)]) for _ in range(length) )
+    arr=[]
+    for i in range(0,26):
+        arr.append(chr(i+97))
+    for i in range(10):
+        arr.append(str(i))
+    s=""
+    for i in range(10):
+        s+=random.SystemRandom().choice(arr) 
+    return s
  
-@csrf_exempt
+@csrf_exempt # as we are making request from other origin
 
 def signin(request):
     if not request.method =='POST':
@@ -34,6 +43,7 @@ def signin(request):
     try:
         user=UserModel.objects.get(email=username)
         if user.check_password(password):
+            # This method takes a plaintext password as an argument, and then it hashes it using the same algorithm and salt used to hash the password during the registration or set_password process. It then compares the hashed password to the stored hash and returns True if they match and False if they don't.
             usr_dict=UserModel.objects.filter(email=username).values().first()
             usr_dict.pop('password')
 
@@ -110,3 +120,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return [permission() for permission in self.permission_classes_by_action[self.action]]
         except KeyError:
             return [permission() for permission in self.permission_classes] 
+    #  this UserViewSet class is a generic view set provided by Django Rest Framework (DRF) that handles CRUD operations for the CustomUser model with the ability to set different permission classes for different actions, and order the queryset by id.
+
+    #  The get_permissions method is overridden to return the permission classes that should be used for the current action. It first tries to retrieve the permission classes for the current action from the permission_classes_by_action dictionary, and if that fails, it falls back to the permission_classes attribute.
