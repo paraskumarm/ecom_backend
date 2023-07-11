@@ -19,6 +19,7 @@ class OrderPayTm(models.Model):
     total_products = models.CharField(max_length=500, default=0)
     total_amount = models.CharField(max_length=50, default=0)
     isPaid=models.BooleanField(default=False)
+    order_payment_id = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self) -> str:
