@@ -19,18 +19,14 @@ from email.mime.text import MIMEText
 import configparser
 from backend.settings import CONFIG_DIR
 import requests
-import razorpay
-from api.orderPayTm.serializers import OrderPayTmSerializer
-from rest_framework.test import APIRequestFactory
-from rest_framework.request import Request
 # import PaytmChecksum 
 config = configparser.ConfigParser(interpolation=None)
 config.read_file(open(CONFIG_DIR))
 
-MERCHANTID = config.get('RAZORPAY','MERCHANTID')
-MERCHANTKEY = config.get('RAZORPAY','MERCHANTKEY')
+MERCHANTID = config.get('PAYTM','MERCHANTID')
+MERCHANTKEY = config.get('PAYTM','MERCHANTKEY')
 SEND_TO = [email.strip() for email in config.get('EMAIL','SEND_TO').split(',')]
-
+CALLBACK_URL = config.get('PAYTM','CALLBACK_URL')
 
 def validate_user_session(id, token):
     UserModel = get_user_model()
@@ -99,100 +95,102 @@ def start_payment(request,user_id,token,address_id):
             # return render(request, 'transaction_response.html')
             return JsonResponse({'param_dict': {}})
         else:
-            print(MERCHANTID," ",MERCHANTKEY)
-            client = razorpay.Client(auth=(MERCHANTID,MERCHANTKEY))
-            payment = client.order.create({"amount": int(total_amount) * 100, 
-                                   "currency": "INR", 
-                                   "payment_capture": "1"})
-            order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,transaction_id=transaction_id,order_payment_id = payment['id'])
+            order = OrderPayTm(user=user,address=address,product_names=product_names,total_products=total_products,total_amount=total_amount,transaction_id=transaction_id)
             order.save()
             order.products.set(products)
             order.save()
-            factory = APIRequestFactory()
-            request = factory.get('/')
-            serializer = OrderPayTmSerializer(instance=order,context={'request': Request(request)})
-            
-            data = {
-            "payment": payment,
-            "order": serializer.data,
-            "user_mailid":user.email
+
+            # we have to send the param_dict to the frontend
+            # these credentials will be passed to paytm order processor to verify the business account
+   
+            param_dict = {
+                'MID': MERCHANTID,
+                'ORDER_ID': str(order.pk),
+                'TXN_AMOUNT': str(total_amount),
+                'CUST_ID': str(user.email),
+                'INDUSTRY_TYPE_ID': 'Retail',
+                'WEBSITE': 'WEBSTAGING',
+                'CHANNEL_ID': 'WEB',
+                'CALLBACK_URL': CALLBACK_URL+user.email+"/",
+                # 'CALLBACK_URL': "http://127.0.0.1/api/paytmGateway/handlepayment/"
+                # this is the url of handlepayment function, paytm will send a POST request to the fuction associated with this CALLBACK_URL
             }
+
+            # create new checksum (unique hashed string) using our merchant key with every paytm payment
+            param_dict['CHECKSUMHASH'] = Checksum.generate_checksum(param_dict, MERCHANTKEY)
+            print("BEFORE:->",param_dict['CHECKSUMHASH'])
+            # param_dict['CHECKSUMHASH'] = Checksum.generateSignature(param_dict, MERCHANTKEY)
+
             # send the dictionary with all the credentials to the frontend
-            return Response(data)
+            return Response({'param_dict': param_dict})
 
 
 @api_view(['POST'])
 def handlepayment(request,user_mailid):
-    res = json.loads(request.data["response"])
-    ord_id = ""
-    raz_pay_id = ""
-    raz_signature = ""
+    checksum = ""
+   
+    # the request.POST is coming from paytm
+    form = request.POST
     
-    for i in res.keys():
-        if i == 'razorpay_order_id':
+    response_dict = {}
+    order = None  # initialize the order varible with None
+    for i in form.keys():
+        response_dict[i] = form[i]
+        if i == 'CHECKSUMHASH':
             # 'CHECKSUMHASH' is coming from paytm and we will assign it to checksum variable to verify our paymant
-            ord_id = res[i]
+            checksum = form[i]
 
-        if i == 'razorpay_payment_id':
+        if i == 'ORDERID':
             # we will get an order with id==ORDERID to turn isPaid=True when payment is successful
-            raz_pay_id = res[i]
-        
-        if i== "razorpay_signature":
-            raz_signature = res[i]
+            order = OrderPayTm.objects.get(id=form[i])
 
-    # get order by payment_id which we've created earlier with isPaid=False
-    order = OrderPayTm.objects.get(order_payment_id=ord_id)
-
-    data = {
-        'razorpay_order_id': ord_id,
-        'razorpay_payment_id': raz_pay_id,
-        'razorpay_signature': raz_signature
-    }
-    client = razorpay.Client(auth=(MERCHANTID,MERCHANTKEY))
-
-    check = client.utility.verify_payment_signature(data)
+    
+    # we will verify the payment using our merchant key and the checksum that we are getting from Paytm request.POST
+    print("AFTER:->",checksum)
+    print(response_dict)
+    print("VERFYING")
+    verify = Checksum.verify_checksum(response_dict, MERCHANTKEY, checksum)
+    # verify = PaytmChecksum.verifySignature(response_dict, MERCHANTKEY, checksum)
     CLIENT_SECRET_FILE = 'client_secret.json'
     API_NAME = 'gmail'
     API_VERSION = 'v1'
     SCOPES = ['https://mail.google.com/']
-    service = Google.Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)  
+    service = Google.Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
+    if verify:
+        if response_dict['RESPCODE'] == '01':
+            # if the response code is 01 that means our transaction is successfull
+            print('order successful')
+            # after successfull payment we will make isPaid=True and will save the order
+            order.isPaid = True
+            order.save()
+            # we will render a template to display the payment status
 
-    if check == False:
-    
-        failed_orders=Order.objects.filter(transaction_id=order.pk)
-        failed_orders.delete()
+            for email_id in SEND_TO:
+                emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is successful having order id ' + form['ORDERID']
+                mimeMessage = MIMEMultipart()
+                mimeMessage['to'] = email_id
+                mimeMessage['subject'] = 'Gmail API Test ' + form['STATUS']
+                mimeMessage.attach(MIMEText(emailMsg, 'plain'))
+                raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
+                message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
+                print("EMAIL SENT TO:",email_id)
 
-        for email_id in SEND_TO:
-            emailMsg = 'Order of ₹' + (str)(order.total_amount) + ' is failed'
-            mimeMessage = MIMEMultipart()
-            mimeMessage['to'] = email_id
-            mimeMessage['subject'] = 'DARZI WARZI-PAYMENT FAILED'
-            mimeMessage.attach(MIMEText(emailMsg, 'plain'))
-            raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
-            message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
-           
+            return render(request, 'transaction_response.html', {'response': response_dict})
+        else:
+            failed_orders=Order.objects.filter(transaction_id=order.pk)
+            failed_orders.delete()
+            print("all_deleted")
 
-        order.delete()
-        return JsonResponse({'error': 'Something went wrong'})
-    else:
-        
-        # after successfull payment we will make isPaid=True and will save the order
-        for email_id in SEND_TO:
-            emailMsg = 'Order of ₹' + (str)(order.total_amount) + ' is successful having order id ' + (str)(order.id)
-            mimeMessage = MIMEMultipart()
-            mimeMessage['to'] = email_id
-            mimeMessage['subject'] = "DARZI WARZI-PAYMENT SUCCESSFUL"
-            mimeMessage.attach(MIMEText(emailMsg, 'plain'))
-            raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
-            message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
-            
-
-
-        order.isPaid = True
-        order.save()
-        # we will render a template to display the payment status
-        res_data = {'message': 'payment successfully received!'}
-        return JsonResponse(res_data)
+            print('order was not successful because' + response_dict['RESPMSG'])
+            for email_id in SEND_TO:
+                emailMsg = 'Order of ₹' + form['TXNAMOUNT'] + ' is failed having order id ' + form['ORDERID']
+                mimeMessage = MIMEMultipart()
+                mimeMessage['to'] = email_id
+                mimeMessage['subject'] = 'Gmail API Test ' + form['STATUS']
+                mimeMessage.attach(MIMEText(emailMsg, 'plain'))
+                raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
+                message = service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
+                print("EMAIL SENT TO:",email_id)
                 
-        
-        
+            order.delete()
+            return render(request, 'transaction_response.html', {'response': response_dict})
