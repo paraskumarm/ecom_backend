@@ -1,4 +1,5 @@
 from django.contrib import admin
-from .models import Usercart
 
+# Register your models here.
+from .models import Usercart
 admin.site.register(Usercart)

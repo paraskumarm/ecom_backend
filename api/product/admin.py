@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Product, Variation  # ,Images#,Tags,Category
+from .models import Product,Variation#,Images#,Tags,Category
 
+# Register your models here.
 
 # admin.site.register(Size)
 admin.site.register(Variation)
