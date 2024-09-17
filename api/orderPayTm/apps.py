@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class OrderpaytmConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'api.orderPayTm'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "api.orderPayTm"
