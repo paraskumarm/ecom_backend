@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class PaytmgatewayConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'api.paytmGateway'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "api.paytmGateway"
