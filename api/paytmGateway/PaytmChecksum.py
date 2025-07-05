@@ -1,21 +1,26 @@
 import base64
-import string
-import random
 import hashlib
+import random
+import string
 import sys
 
 from Crypto.Cipher import AES
 
-
-iv = '@@@@&&&&####$$$$'
+iv = "@@@@&&&&####$$$$"
 BLOCK_SIZE = 16
 
-if (sys.version_info > (3, 0)):
-    __pad__ = lambda s: bytes(s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE), 'utf-8')
+if sys.version_info > (3, 0):
+    __pad__ = lambda s: bytes(
+        s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE),
+        "utf-8",
+    )
 else:
-    __pad__ = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
+    __pad__ = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(
+        BLOCK_SIZE - len(s) % BLOCK_SIZE
+    )
 
-__unpad__ = lambda s: s[0:-ord(s[-1])]    
+__unpad__ = lambda s: s[0 : -ord(s[-1])]
+
 
 def encrypt(input, key):
     input = __pad__(input)
@@ -23,6 +28,7 @@ def encrypt(input, key):
     input = c.encrypt(input)
     input = base64.b64encode(input)
     return input.decode("UTF-8")
+
 
 def decrypt(encrypted, key):
     encrypted = base64.b64decode(encrypted)
@@ -32,6 +38,7 @@ def decrypt(encrypted, key):
         param = param.decode()
     return __unpad__(param)
 
+
 def generateSignature(params, key):
     if not type(params) is dict and not type(params) is str:
         raise Exception("string or dict expected, " + str(type(params)) + " given")
@@ -39,42 +46,58 @@ def generateSignature(params, key):
         params = getStringByParams(params)
     return generateSignatureByString(params, key)
 
+
 def verifySignature(params, key, checksum):
     if not type(params) is dict and not type(params) is str:
         raise Exception("string or dict expected, " + str(type(params)) + " given")
     if "CHECKSUMHASH" in params:
         del params["CHECKSUMHASH"]
-        
+
     if type(params) is dict:
         params = getStringByParams(params)
     return verifySignatureByString(params, key, checksum)
 
-def generateSignatureByString(params, key):    
+
+def generateSignatureByString(params, key):
     salt = generateRandomString(4)
     return calculateChecksum(params, key, salt)
 
+
 def verifySignatureByString(params, key, checksum):
-    paytm_hash = decrypt(checksum, key)    
+    paytm_hash = decrypt(checksum, key)
     salt = paytm_hash[-4:]
     return paytm_hash == calculateHash(params, salt)
 
+
 def generateRandomString(length):
-    chars = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for _ in range(length))
+    chars = "".join(
+        random.SystemRandom().choice(
+            string.ascii_uppercase + string.digits + string.ascii_lowercase
+        )
+        for _ in range(length)
+    )
     return chars
+
 
 def getStringByParams(params):
     params_string = []
     for key in sorted(params.keys()):
-        value = params[key] if params[key] is not None and params[key].lower() != "null" else ""
+        value = (
+            params[key]
+            if params[key] is not None and params[key].lower() != "null"
+            else ""
+        )
         params_string.append(str(value))
-    return '|'.join(params_string)
+    return "|".join(params_string)
 
-def calculateHash(params, salt):    
-    finalString = '%s|%s' % (params, salt)
+
+def calculateHash(params, salt):
+    finalString = "%s|%s" % (params, salt)
     hasher = hashlib.sha256(finalString.encode())
     hashString = hasher.hexdigest() + salt
     return hashString
 
-def calculateChecksum(params, key, salt): 
+
+def calculateChecksum(params, key, salt):
     hashString = calculateHash(params, salt)
     return encrypt(hashString, key)

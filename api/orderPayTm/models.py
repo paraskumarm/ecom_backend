@@ -1,7 +1,8 @@
 from django.db import models
+
 from api.address.models import Address
-from api.user.models import CustomUser
 from api.product.models import Product
+from api.user.models import CustomUser
 
 
 class OrderPayTm(models.Model):
@@ -12,8 +13,6 @@ class OrderPayTm(models.Model):
         Address, on_delete=models.CASCADE, null=True, blank=True
     )
     products = models.ManyToManyField(Product)
-    # products = models.ForeignKey(
-    # Product, on_delete=models.CASCADE, null=True, blank=True)
     transaction_id = models.IntegerField()
     product_names = models.CharField(max_length=500)
     total_products = models.CharField(max_length=500, default=0)

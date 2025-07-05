@@ -6,38 +6,49 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0007_auto_20220103_0741'),
+        ("product", "0007_auto_20220103_0741"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Images',
+            name="Images",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(blank=True, null=True, upload_to='images/')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "image",
+                    models.ImageField(blank=True, null=True, upload_to="images/"),
+                ),
             ],
         ),
         migrations.RemoveField(
-            model_name='product',
-            name='image',
+            model_name="product",
+            name="image",
         ),
         migrations.AlterField(
-            model_name='product',
-            name='category',
+            model_name="product",
+            name="category",
             field=models.JSONField(),
         ),
         migrations.AlterField(
-            model_name='product',
-            name='tag',
+            model_name="product",
+            name="tag",
             field=models.JSONField(),
         ),
         migrations.RemoveField(
-            model_name='product',
-            name='variation',
+            model_name="product",
+            name="variation",
         ),
         migrations.AddField(
-            model_name='product',
-            name='variation',
+            model_name="product",
+            name="variation",
             field=models.JSONField(null=True),
         ),
     ]

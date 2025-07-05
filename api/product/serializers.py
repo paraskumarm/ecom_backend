@@ -1,20 +1,8 @@
 from rest_framework import serializers
-from .models import Product, Variation  # ,Images#,Tags,Category
 
-# class TagSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Tags
-#         fields=('tag')
-# class CategorySerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Category
-#         fields=('category')
+from .models import Product, Variation
 
 
-# class SizeSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Size
-#         fields=('name','stock')
 class VariationSerializer(serializers.HyperlinkedModelSerializer):
     image = serializers.ImageField(
         max_length=None, allow_empty_file=False, allow_null=True, required=False
@@ -26,15 +14,7 @@ class VariationSerializer(serializers.HyperlinkedModelSerializer):
         depth = 1
 
 
-# class ImagesSerializer(serializers.HyperlinkedModelSerializer):
-#     image=serializers.ImageField(max_length=None,allow_empty_file=False,allow_null=True,required=False)
-#     class Meta:
-#         model = Images
-#         fields=('image')
-
-
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
-    # image=serializers.ImageField(max_length=None,allow_empty_file=False,allow_null=True,required=False)
     class Meta:
         model = Product
         fields = (

@@ -1,7 +1,6 @@
 from django.urls import path
 
-from api.paytmGateway.views import start_payment
-from api.paytmGateway.views import handlepayment
+from api.paytmGateway.views import handlepayment, start_payment
 
 urlpatterns = [
     path(

@@ -1,12 +1,12 @@
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 
 from api.product.models import Product
 
-from .serializers import CartSerializer
 from .models import Usercart
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import get_user_model
+from .serializers import CartSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):

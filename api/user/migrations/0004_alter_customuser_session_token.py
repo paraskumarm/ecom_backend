@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0003_auto_20220127_1946'),
+        ("user", "0003_auto_20220127_1946"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customuser',
-            name='session_token',
+            model_name="customuser",
+            name="session_token",
             field=models.CharField(default=0, max_length=1000),
         ),
     ]

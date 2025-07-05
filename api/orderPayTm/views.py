@@ -1,11 +1,11 @@
-from rest_framework import viewsets
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import viewsets
 
 from api.orderPayTm.serializers import OrderPayTmSerializer
-from .models import Address, OrderPayTm
-from django.views.decorators.csrf import csrf_exempt
 
-from django.contrib.auth import get_user_model
+from .models import Address, OrderPayTm
 
 
 class OrderPayTmViewSet(viewsets.ModelViewSet):
@@ -27,12 +27,9 @@ def validate_user_session(id, token):
 
 @csrf_exempt
 def add(request, user_id, token, address_id):
-    # return JsonResponse({'msg': 'HI'})
     if not validate_user_session(user_id, token):
         return JsonResponse({"error": "Please re-login", "code": "1"})
     if request.method == "POST":
-        user_id = user_id
-        address_id = address_id
         product_names = request.POST["product_names"]
         total_products = request.POST["total_products"]
         total_amount = request.POST["total_amount"]
@@ -55,8 +52,6 @@ def add(request, user_id, token, address_id):
             total_amount=total_amount,
         )
         order.save()
-        # for i in range(0,len())
-
         return JsonResponse(
             {
                 "success": True,

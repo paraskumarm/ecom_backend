@@ -1,8 +1,8 @@
 from django.db.models import fields
-from api.wishlist.models import Wishlist
 from rest_framework import serializers
 
 from api.product.serializers import ProductSerializer
+from api.wishlist.models import Wishlist
 
 
 class WishlistSerializer(serializers.HyperlinkedModelSerializer):

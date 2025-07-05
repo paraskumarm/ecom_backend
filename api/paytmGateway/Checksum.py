@@ -1,8 +1,8 @@
 # pip install pycryptodome
 import base64
-import string
-import random
 import hashlib
+import random
+import string
 
 from Crypto.Cipher import AES
 

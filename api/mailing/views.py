@@ -1,19 +1,19 @@
-from urllib import request
-from django.http import JsonResponse
-from django.shortcuts import render
 import base64
+import configparser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import configparser
-from backend.settings import CONFIG_DIR
-import Google
+
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+
+import Google
+from backend.settings import CONFIG_DIR
 
 config = configparser.ConfigParser(interpolation=None)
 config.read_file(open(CONFIG_DIR))
 
 SEND_TO = [email.strip() for email in config.get("EMAIL", "SEND_TO").split(",")]
-
 
 
 @csrf_exempt

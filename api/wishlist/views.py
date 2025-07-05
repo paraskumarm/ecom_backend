@@ -1,14 +1,14 @@
-from django.shortcuts import render
-
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 
 from api.product.models import Product
 
-from .serializers import WishlistSerializer
 from .models import Wishlist
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import get_user_model
+from .serializers import WishlistSerializer
+
 
 class WishlistViewSet(viewsets.ModelViewSet):
     queryset = Wishlist.objects.all().order_by("id")

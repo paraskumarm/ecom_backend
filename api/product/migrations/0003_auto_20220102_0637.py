@@ -6,26 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0002_auto_20220101_2101'),
+        ("product", "0002_auto_20220101_2101"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='product',
-            name='variation',
+            model_name="product",
+            name="variation",
         ),
         migrations.AddField(
-            model_name='product',
-            name='variation',
-            field=models.ManyToManyField(to='product.Variation'),
+            model_name="product",
+            name="variation",
+            field=models.ManyToManyField(to="product.Variation"),
         ),
         migrations.RemoveField(
-            model_name='variation',
-            name='size',
+            model_name="variation",
+            name="size",
         ),
         migrations.AddField(
-            model_name='variation',
-            name='size',
-            field=models.ManyToManyField(to='product.Size'),
+            model_name="variation",
+            name="size",
+            field=models.ManyToManyField(to="product.Size"),
         ),
     ]

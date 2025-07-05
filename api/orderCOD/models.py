@@ -1,7 +1,8 @@
 from django.db import models
+
 from api.address.models import Address
-from api.user.models import CustomUser
 from api.product.models import Product
+from api.user.models import CustomUser
 
 
 class OrderCOD(models.Model):

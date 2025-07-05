@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         # ('category', '0002_remove_category_description'),
-        ('product', '0004_auto_20220102_0938'),
+        ("product", "0004_auto_20220102_0938"),
     ]
 
     operations = [
@@ -16,18 +16,18 @@ class Migration(migrations.Migration):
         #     name='category',
         # ),
         migrations.AddField(
-            model_name='product',
-            name='category',
-            field=models.ManyToManyField(to='category.Category'),
+            model_name="product",
+            name="category",
+            field=models.ManyToManyField(to="category.Category"),
         ),
         migrations.AlterField(
-            model_name='product',
-            name='fullDescription',
+            model_name="product",
+            name="fullDescription",
             field=models.CharField(max_length=2000, null=True),
         ),
         migrations.AlterField(
-            model_name='product',
-            name='shortDescription',
+            model_name="product",
+            name="shortDescription",
             field=models.CharField(max_length=1000, null=True),
         ),
     ]

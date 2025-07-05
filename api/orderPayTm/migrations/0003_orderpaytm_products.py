@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0011_auto_20220105_2025'),
-        ('orderPayTm', '0002_orderpaytm_ispaid'),
+        ("product", "0011_auto_20220105_2025"),
+        ("orderPayTm", "0002_orderpaytm_ispaid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='orderpaytm',
-            name='products',
-            field=models.ManyToManyField(to='product.Product'),
+            model_name="orderpaytm",
+            name="products",
+            field=models.ManyToManyField(to="product.Product"),
         ),
     ]

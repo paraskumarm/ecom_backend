@@ -6,37 +6,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0009_product_image'),
+        ("product", "0009_product_image"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='product',
-            name='image',
+            model_name="product",
+            name="image",
         ),
         migrations.AddField(
-            model_name='product',
-            name='image1',
-            field=models.ImageField(blank=True, null=True, upload_to='images/'),
+            model_name="product",
+            name="image1",
+            field=models.ImageField(blank=True, null=True, upload_to="images/"),
         ),
         migrations.AddField(
-            model_name='product',
-            name='image2',
-            field=models.ImageField(blank=True, null=True, upload_to='images/'),
+            model_name="product",
+            name="image2",
+            field=models.ImageField(blank=True, null=True, upload_to="images/"),
         ),
         migrations.AddField(
-            model_name='product',
-            name='image3',
-            field=models.ImageField(blank=True, null=True, upload_to='images/'),
+            model_name="product",
+            name="image3",
+            field=models.ImageField(blank=True, null=True, upload_to="images/"),
         ),
         migrations.AddField(
-            model_name='product',
-            name='image4',
-            field=models.ImageField(blank=True, null=True, upload_to='images/'),
+            model_name="product",
+            name="image4",
+            field=models.ImageField(blank=True, null=True, upload_to="images/"),
         ),
         migrations.AddField(
-            model_name='product',
-            name='image5',
-            field=models.ImageField(blank=True, null=True, upload_to='images/'),
+            model_name="product",
+            name="image5",
+            field=models.ImageField(blank=True, null=True, upload_to="images/"),
         ),
     ]
