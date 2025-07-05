@@ -1,27 +1,24 @@
-from itertools import product
-import json
-from django.http import JsonResponse
-import Google
-from api.product.models import Product
-from django.shortcuts import render
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from api.orderPayTm.models import OrderPayTm, Address
-from api.orderCOD.models import OrderCOD
-from django.contrib.auth import get_user_model
-
-from api.order.models import Order
-from . import Checksum
 import base64
+import configparser
+import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import configparser
-from backend.settings import CONFIG_DIR
-import requests
+
 import razorpay
-from api.orderPayTm.serializers import OrderPayTmSerializer
-from rest_framework.test import APIRequestFactory
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.test import APIRequestFactory
+
+import Google
+from api.order.models import Order
+from api.orderCOD.models import OrderCOD
+from api.orderPayTm.models import Address, OrderPayTm
+from api.orderPayTm.serializers import OrderPayTmSerializer
+from api.product.models import Product
+from backend.settings import CONFIG_DIR
 
 # import PaytmChecksum
 config = configparser.ConfigParser(interpolation=None)
@@ -43,10 +40,8 @@ def validate_user_session(id, token):
         return False
 
 
-# @csrf_exempt
 @api_view(["POST"])
 def start_payment(request, user_id, token, address_id):
-    # request.data is coming from frontend
     if not validate_user_session(user_id, token):
         return JsonResponse({"error": "Please re-login", "code": "1"})
     if request.method == "POST":
@@ -62,7 +57,6 @@ def start_payment(request, user_id, token, address_id):
         product_name_array = request.POST["product_name_array"]
         price_info = request.POST["price_info"]
         product_id = request.POST["product_id"]
-        # loads() method can be used to parse a valid JSON string and convert it into a Python Dictionary
         quantity_info = json.loads(quantity_info)
         color_info = json.loads(color_info)
         size_info = json.loads(size_info)
@@ -211,7 +205,6 @@ def handlepayment(request, user_mailid):
         order.delete()
         return JsonResponse({"error": "Something went wrong"})
     else:
-        # after successfull payment we will make isPaid=True and will save the order
         for email_id in SEND_TO:
             emailMsg = (
                 "Order of ₹"
@@ -233,6 +226,6 @@ def handlepayment(request, user_mailid):
 
         order.isPaid = True
         order.save()
-        # we will render a template to display the payment status
+
         res_data = {"message": "payment successfully received!"}
         return JsonResponse(res_data)

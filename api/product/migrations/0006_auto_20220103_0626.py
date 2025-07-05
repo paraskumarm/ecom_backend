@@ -6,32 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0005_auto_20220102_1140'),
+        ("product", "0005_auto_20220102_1140"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('category', models.CharField(max_length=40)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("category", models.CharField(max_length=40)),
             ],
         ),
         migrations.CreateModel(
-            name='Tags',
+            name="Tags",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('tag', models.CharField(max_length=40)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("tag", models.CharField(max_length=40)),
             ],
         ),
         migrations.AddField(
-            model_name='product',
-            name='tag',
-            field=models.ManyToManyField(to='product.Tags'),
+            model_name="product",
+            name="tag",
+            field=models.ManyToManyField(to="product.Tags"),
         ),
         migrations.AlterField(
-            model_name='product',
-            name='category',
-            field=models.ManyToManyField(to='product.Category'),
+            model_name="product",
+            name="category",
+            field=models.ManyToManyField(to="product.Category"),
         ),
     ]

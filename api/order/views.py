@@ -1,9 +1,11 @@
-from rest_framework import viewsets
-from django.http import JsonResponse
 from django.contrib.auth import get_user_model
-from .serializers import OrderSerializer
-from .models import Order
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import viewsets
+
+from .models import Order
+from .serializers import OrderSerializer
+
 
 def validate_user_session(id, token):
     UserModel = get_user_model()
@@ -14,7 +16,8 @@ def validate_user_session(id, token):
         return False
     except UserModel.DoesNotExist:
         return False
-    
+
+
 @csrf_exempt
 def add(request, id, token):
     # return JsonResponse({'msg': 'HI'})

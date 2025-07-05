@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('paytmGateway', '0001_initial'),
+        ("paytmGateway", "0001_initial"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='Order',
+            name="Order",
         ),
     ]

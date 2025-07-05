@@ -6,44 +6,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0006_auto_20220103_0626'),
+        ("product", "0006_auto_20220103_0626"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='product',
-            name='category',
+            model_name="product",
+            name="category",
         ),
         migrations.AddField(
-            model_name='product',
-            name='category',
-            field=models.CharField(default='Fashion', max_length=40),
+            model_name="product",
+            name="category",
+            field=models.CharField(default="Fashion", max_length=40),
         ),
         migrations.RemoveField(
-            model_name='product',
-            name='image',
+            model_name="product",
+            name="image",
         ),
         migrations.AddField(
-            model_name='product',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='images/'),
+            model_name="product",
+            name="image",
+            field=models.ImageField(blank=True, null=True, upload_to="images/"),
         ),
         migrations.RemoveField(
-            model_name='product',
-            name='tag',
+            model_name="product",
+            name="tag",
         ),
         migrations.AddField(
-            model_name='product',
-            name='tag',
-            field=models.CharField(default='Fashion', max_length=40),
+            model_name="product",
+            name="tag",
+            field=models.CharField(default="Fashion", max_length=40),
         ),
         migrations.DeleteModel(
-            name='Category',
+            name="Category",
         ),
         migrations.DeleteModel(
-            name='Images',
+            name="Images",
         ),
         migrations.DeleteModel(
-            name='Tags',
+            name="Tags",
         ),
     ]

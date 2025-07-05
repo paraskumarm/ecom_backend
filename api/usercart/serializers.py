@@ -1,7 +1,7 @@
-from django.db.models import fields
-from api.usercart.models import Usercart
 from rest_framework import serializers
+
 from api.product.serializers import ProductSerializer
+from api.usercart.models import Usercart
 
 
 class CartSerializer(serializers.HyperlinkedModelSerializer):

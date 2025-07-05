@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0011_auto_20220105_2025'),
-        ('usercart', '0001_initial'),
+        ("product", "0011_auto_20220105_2025"),
+        ("usercart", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='usercart',
-            name='product',
+            model_name="usercart",
+            name="product",
         ),
         migrations.AddField(
-            model_name='usercart',
-            name='product',
-            field=models.ManyToManyField(blank=True, null=True, to='product.Product'),
+            model_name="usercart",
+            name="product",
+            field=models.ManyToManyField(blank=True, null=True, to="product.Product"),
         ),
     ]

@@ -6,32 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('product', '0014_variation_name'),
+        ("product", "0014_variation_name"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='variation',
-            name='size',
+            model_name="variation",
+            name="size",
         ),
         migrations.AddField(
-            model_name='variation',
-            name='stockL',
+            model_name="variation",
+            name="stockL",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='variation',
-            name='stockM',
+            model_name="variation",
+            name="stockM",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='variation',
-            name='stockS',
+            model_name="variation",
+            name="stockS",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='variation',
-            name='stockXL',
+            model_name="variation",
+            name="stockXL",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

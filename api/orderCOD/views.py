@@ -1,15 +1,19 @@
-from rest_framework import viewsets
-from django.http import JsonResponse
-from api.orderCOD.serializers import OrderCODSerializer
-from .models import Address, OrderCOD
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import viewsets
+
+from api.orderCOD.serializers import OrderCODSerializer
+
+from .models import Address, OrderCOD
+
 
 class OrderCODViewSet(viewsets.ModelViewSet):
     queryset = OrderCOD.objects.all()
     serializer_class = OrderCODSerializer
     filterset_fields = ["user"]
-    
+
+
 def validate_user_session(id, token):
     UserModel = get_user_model()
     try:
@@ -19,6 +23,7 @@ def validate_user_session(id, token):
         return False
     except UserModel.DoesNotExist:
         return False
+
 
 @csrf_exempt
 def add(request, user_id, token, address_id):

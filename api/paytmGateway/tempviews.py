@@ -1,23 +1,25 @@
-from itertools import product
+import base64
+import configparser
 import json
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from itertools import product
+
+import requests
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
-import Google
-from api.product.models import Product
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from api.orderPayTm.models import OrderPayTm, Address
-from api.orderCOD.models import OrderCOD
-from django.contrib.auth import get_user_model
 
+import Google
 from api.order.models import Order
-from . import Checksum
-import base64
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import configparser
+from api.orderCOD.models import OrderCOD
+from api.orderPayTm.models import Address, OrderPayTm
+from api.product.models import Product
 from backend.settings import CONFIG_DIR
-import requests
+
+from . import Checksum
 
 # import PaytmChecksum
 config = configparser.ConfigParser(interpolation=None)
